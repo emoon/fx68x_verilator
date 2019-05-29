@@ -1,0 +1,14 @@
+run
+-ifn fx68k.prj
+-ifmt mixed
+-ofn fx68k.ngc
+-ofmt NGC
+-p XC3S1600E-FG320-4
+-opt_mode area
+-opt_level 1
+-fsm_extract no
+-keep_hierarchy no
+-top fx68k
+-glob_opt ALLCLOCKNETS
+-iobuf no
+
