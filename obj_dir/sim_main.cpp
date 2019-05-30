@@ -11,8 +11,8 @@ int main(int argc, char** argv, char** env) {
     // phi1 l h l l l h l l
     // phi2 l l l h l l l h
 
-    const char phi1_values[] = { 0, 1, 0, 0, 0, 1, 0, 0 };
-    const char phi2_values[] = { 0, 0, 0, 1, 0, 0, 0, 1 };
+    const char phi1_values[] = { 0, 0, 0, 0, 0, 1, 1, 0 };
+    const char phi2_values[] = { 0, 1, 1, 0, 0, 0, 0, 0 };
 
     int cycle = 0;
 
@@ -31,7 +31,18 @@ int main(int argc, char** argv, char** env) {
         cycle++;
     }
 
-    top->iEdb = 0x7fff;
+    top->iEdb = 1;
+	top->pwrUp = 0;
+	top->extReset = 0;
+	top->VPAn = 1;
+	top->BERRn = 1;
+	top->BRn = 1;
+	top->BGACKn = 1;
+	top->IPL0n = 1;
+	top->IPL1n = 1;
+	top->IPL2n = 1;
+	top->VPAn = 1;
+	top->BGACKn = 1;
 
     for (int i = 0; i < 10; ++i) {
         int clk = cycle & 1;
@@ -44,17 +55,6 @@ int main(int argc, char** argv, char** env) {
         top->enPhi2 = pih2;
         top->DTACKn = 0;
 
-        top->pwrUp = 0;
-        top->extReset = 0;
-        top->VPAn = 1;
-        top->BERRn = 1;
-        top->BRn = 1;
-        top->BGACKn = 1;
-        top->IPL0n = 1;
-        top->IPL1n = 1;
-        top->IPL2n = 1;
-        top->VPAn = 1;
-        top->BGACKn = 1;
 
         top->eval();
 
