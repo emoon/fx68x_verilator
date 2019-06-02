@@ -17,23 +17,27 @@ int main(int argc, char** argv, char** env) {
     int cycle = 0;
 
     // reset the CPU
+    
+	top->pwrUp = 1;
+	top->extReset = 1;
 
     for (int i = 0; i < 400; ++i) {
         int clk = cycle & 1;
-        top->clk = clk;
-        top->pwrUp = 1;
-        top->extReset = 1;
-        top->DTACKn = 1;
-        top->enPhi1 = 0;
-        top->enPhi2 = 0;
+        int pih1 = phi1_values[cycle & 7];
+        int pih2 = phi2_values[cycle & 7];
 
+        top->enPhi1 = pih1;
+        top->enPhi2 = pih2;
+        top->clk = clk;
         top->eval();
+
         cycle++;
     }
 
-    top->iEdb = 1;
 	top->pwrUp = 0;
 	top->extReset = 0;
+
+    top->iEdb = 1;
 	top->VPAn = 1;
 	top->BERRn = 1;
 	top->BRn = 1;
@@ -43,18 +47,17 @@ int main(int argc, char** argv, char** env) {
 	top->IPL2n = 1;
 	top->VPAn = 1;
 	top->BGACKn = 1;
+	top->DTACKn = 1;
+
 
     for (int i = 0; i < 10; ++i) {
         int clk = cycle & 1;
         int pih1 = phi1_values[cycle & 7];
         int pih2 = phi2_values[cycle & 7];
 
-        top->DTACKn = 1;
         top->clk = clk;
         top->enPhi1 = pih1;
         top->enPhi2 = pih2;
-        top->DTACKn = 0;
-
 
         top->eval();
 
