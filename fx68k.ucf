@@ -1,3 +1,0 @@
-
-NET clk         TNM_NET = clk_a_grp;
-TIMESPEC TS01 = PERIOD : clk_a_grp : 28.00 ;

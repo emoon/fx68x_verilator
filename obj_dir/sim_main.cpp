@@ -1,11 +1,19 @@
 #include "Vfx68k.h"
 #include "verilated.h"
 #include <stdio.h>
+#include <verilated_vcd_c.h>
 
 int main(int argc, char** argv, char** env) {
     Verilated::commandArgs(argc, argv);
+    Verilated::traceEverOn(true);
     Verilated::debug(1);
+
+    VerilatedVcdC* trace = new VerilatedVcdC;
     Vfx68k* top = new Vfx68k;
+
+    top->trace(trace, 99);
+    trace->open("trace.vcd");
+
 
     // clk  l h l h l h l h
     // phi1 l h l l l h l l
@@ -14,14 +22,14 @@ int main(int argc, char** argv, char** env) {
     const char phi1_values[] = { 0, 0, 0, 0, 0, 1, 1, 0 };
     const char phi2_values[] = { 0, 1, 1, 0, 0, 0, 0, 0 };
 
-    int cycle = 0;
+    int cycle = 1;
 
     // reset the CPU
-    
+
 	top->pwrUp = 1;
 	top->extReset = 1;
 
-    for (int i = 0; i < 400; ++i) {
+    for (int i = 0; i < 10; ++i) {
         int clk = cycle & 1;
         int pih1 = phi1_values[cycle & 7];
         int pih2 = phi2_values[cycle & 7];
@@ -30,6 +38,8 @@ int main(int argc, char** argv, char** env) {
         top->enPhi2 = pih2;
         top->clk = clk;
         top->eval();
+        trace->dump(cycle);
+        trace->flush();
 
         cycle++;
     }
@@ -37,7 +47,7 @@ int main(int argc, char** argv, char** env) {
 	top->pwrUp = 0;
 	top->extReset = 0;
 
-    top->iEdb = 1;
+    top->iEdb = 0x0000;
 	top->VPAn = 1;
 	top->BERRn = 1;
 	top->BRn = 1;
@@ -50,16 +60,20 @@ int main(int argc, char** argv, char** env) {
 	top->DTACKn = 1;
 
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 2000; ++i) {
         int clk = cycle & 1;
         int pih1 = phi1_values[cycle & 7];
         int pih2 = phi2_values[cycle & 7];
+
+        printf("cycle %d clock %d\n", cycle, clk);
 
         top->clk = clk;
         top->enPhi1 = pih1;
         top->enPhi2 = pih2;
 
         top->eval();
+        trace->dump(cycle);
+        trace->flush();
 
         //printf("---------- INPUT --------------\n");
         //printf("clk      %08x\n", clk);
@@ -81,6 +95,11 @@ int main(int argc, char** argv, char** env) {
         //printf("oHALTEDn %08x\n", top->oHALTEDn);
         printf("eab      %08x\n", top->eab);
         printf("oEdb     %08x\n", top->oEdb);
+
+        if (top->ASn == 0)
+        {
+            top->DTACKn = 0;
+        }
 
         cycle++;
     }
