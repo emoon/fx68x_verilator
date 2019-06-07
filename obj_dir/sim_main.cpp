@@ -187,15 +187,11 @@ int main(int argc, char** argv, char** env) {
                         top->iEdb = (v0 << 8) | v1;
                     }
                 }
-            }
-            else
-            {
-                printf("writing data %08x - %d %d\n", top->iEdb, top->LDSn,top->UDSn);
 
-                if (top->LDSn == 1 && top->UDSn == 1) {
-                    memory[address + 0] = top->oEdb >> 8;
-                    memory[address + 1] = top->oEdb & 0xff;
-                } if (top->LDSn) {
+                top->DTACKn = 0;
+            } else if (top->LDSn == 0 || top->UDSn == 0) {
+                printf("writing data %08x - %d %d\n", top->iEdb, top->LDSn,top->UDSn);
+                if (top->LDSn) {
                     memory[address + 0] = top->oEdb >> 8;
                 }
                 else if (top->UDSn) {
@@ -204,9 +200,8 @@ int main(int argc, char** argv, char** env) {
                     memory[address + 0] = top->oEdb >> 8;
                     memory[address + 1] = top->oEdb & 0xff;
                 }
+                top->DTACKn = 0;
             }
-
-            top->DTACKn = 0;
         }
 
         if (top->ASn == 1)
