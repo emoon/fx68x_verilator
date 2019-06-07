@@ -48,16 +48,23 @@ uint8_t* File_loadToMemory(const char* filename, size_t* size) {
     return data;
 }
 
+uint64_t get_time() {
+    struct timespec tv;
+    clock_gettime(CLOCK_REALTIME, &tv);
+    return (uint64_t)(tv.tv_sec * 1000000) + (uint64_t)(tv.tv_nsec * 0.001);
+}
+
+
 int main(int argc, char** argv, char** env) {
     Verilated::commandArgs(argc, argv);
-    Verilated::traceEverOn(true);
-    Verilated::debug(1);
+    //Verilated::traceEverOn(true);
+    //Verilated::debug(0);
 
-    VerilatedVcdC* trace = new VerilatedVcdC;
+    //VerilatedVcdC* trace = new VerilatedVcdC;
     Vfx68k* top = new Vfx68k;
 
-    top->trace(trace, 99);
-    trace->open("trace.vcd");
+    //top->trace(trace, 99);
+    //trace->open("trace.vcd");
 
     size_t size = 0;
 
@@ -92,8 +99,8 @@ int main(int argc, char** argv, char** env) {
         top->enPhi2 = pih2;
         top->clk = clk;
         top->eval();
-        trace->dump(cycle);
-        trace->flush();
+        //trace->dump(cycle);
+        //trace->flush();
 
         cycle++;
     }
@@ -118,27 +125,28 @@ int main(int argc, char** argv, char** env) {
     // this is hack to not put data on the bus for the first time the address is zero
     //int init_done = 0;
 
+    uint64_t start_time = get_time();
 
-    for (int i = 0; i < 4000; ++i) {
+    while (1) {
         int clk = cycle & 1;
         int pih1 = phi1_values[cycle & 7];
         int pih2 = phi2_values[cycle & 7];
-
-        printf("cycle %d clock %d\n", cycle, clk);
 
         top->clk = clk;
         top->enPhi1 = pih1;
         top->enPhi2 = pih2;
 
         top->eval();
-        trace->dump(cycle);
-        trace->flush();
+
+        //trace->dump(cycle);
+        //trace->flush();
 
         //printf("---------- INPUT --------------\n");
         //printf("clk      %08x\n", clk);
         //printf("pih1     %08x\n", pih1);
         //printf("pih2     %08x\n", pih2);
 
+        /*
         printf("---------- OUTPUT --------------\n");
         printf("eRWn     %08x\n", top->eRWn);
         printf("ASn      %08x\n", top->ASn);
@@ -155,14 +163,18 @@ int main(int argc, char** argv, char** env) {
         printf("eab      %08x\n", top->eab);
         printf("oEdb     %08x\n", top->oEdb);
 
-        printf("d0 low   %08x\n", top->fx68k__DOT__excUnit__DOT__regs68L[0]);
-        printf("d0 high  %08x\n", top->fx68k__DOT__excUnit__DOT__regs68H[0]);
 
         printf("d6 low   %08x\n", top->fx68k__DOT__excUnit__DOT__regs68L[6]);
         printf("d6 high  %08x\n", top->fx68k__DOT__excUnit__DOT__regs68H[6]);
 
         printf("d7 low   %08x\n", top->fx68k__DOT__excUnit__DOT__regs68L[7]);
         printf("d7 high  %08x\n", top->fx68k__DOT__excUnit__DOT__regs68H[7]);
+        */
+
+        //printf("d0 low   %08x\n", top->fx68k__DOT__excUnit__DOT__regs68L[0]);
+        //printf("d0 high  %08x\n", top->fx68k__DOT__excUnit__DOT__regs68H[0]);
+        //
+
 
         if (top->ASn == 0 && top->DTACKn == 1 && pih1 == 1) {
             uint32_t address = top->eab * 2;
@@ -190,7 +202,6 @@ int main(int argc, char** argv, char** env) {
 
                 top->DTACKn = 0;
             } else if (top->LDSn == 0 || top->UDSn == 0) {
-                printf("writing data %08x - %d %d\n", top->iEdb, top->LDSn,top->UDSn);
                 if (top->LDSn) {
                     memory[address + 0] = top->oEdb >> 8;
                 }
@@ -210,13 +221,32 @@ int main(int argc, char** argv, char** env) {
             top->DTACKn = 1;
         }
 
+        uint16_t pc_low = top->fx68k__DOT__excUnit__DOT__PcL;
+
+        printf("pc %08x\n", pc_low);
+
+        if (pc_low == 34) {
+            break;
+        }
+
         cycle++;
     }
 
-    printf("written data %d\n", memory[512]);
-    printf("written data %d\n", memory[513]);
-    printf("written data %d\n", memory[514]);
-    printf("written data %d\n", memory[515]);
+    uint64_t end_time = get_time();
+
+    printf("%llx %llx\n", start_time, end_time);
+
+    double total_time = end_time - start_time;
+
+    printf("time ms (cycle count %d) %f\n", total_time / 1000.0, cycle);
+
+    uint16_t pc_low = top->fx68k__DOT__excUnit__DOT__PcL;
+
+    //printf("PC %08d\n", pc_low);
+    //printf("written data %d\n", memory[512]);
+    //printf("written data %d\n", memory[513]);
+    //printf("written data %d\n", memory[514]);
+    //printf("written data %d\n", memory[515]);
 
     return 0;
 }
