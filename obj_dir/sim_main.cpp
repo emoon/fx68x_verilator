@@ -57,14 +57,14 @@ uint64_t get_time() {
 
 int main(int argc, char** argv, char** env) {
     Verilated::commandArgs(argc, argv);
-    Verilated::traceEverOn(true);
+    //Verilated::traceEverOn(true);
     Verilated::debug(0);
 
-    VerilatedVcdC* trace = new VerilatedVcdC;
+    //VerilatedVcdC* trace = new VerilatedVcdC;
     Vfx68k* top = new Vfx68k;
 
-    top->trace(trace, 99);
-    trace->open("trace.vcd");
+    //top->trace(trace, 99);
+    //trace->open("trace.vcd");
 
     size_t size = 0;
 
@@ -99,8 +99,8 @@ int main(int argc, char** argv, char** env) {
         top->enPhi2 = pih2;
         top->clk = clk;
         top->eval();
-        trace->dump(cycle);
-        trace->flush();
+        //trace->dump(cycle);
+        //trace->flush();
 
         cycle++;
     }
@@ -138,8 +138,8 @@ int main(int argc, char** argv, char** env) {
 
         top->eval();
 
-        trace->dump(cycle);
-        trace->flush();
+        //trace->dump(cycle);
+        //trace->flush();
 
         //printf("---------- INPUT --------------\n");
         //printf("clk      %08x\n", clk);
